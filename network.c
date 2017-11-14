@@ -322,14 +322,17 @@ void findReachability(networkNode * current, nodeTree ** found, int from){
 int checkComercialConnected(network * n){
 
     nodeTree * reached = NULL;
-    if(!checkPeerBetweenTierOnes(n)){
-        n->comercialyConected = 0;
-        return 0;
-    }else{
+    if(checkPeerBetweenTierOnes(n)){
+        
         findReachability(n->tierOnes->node, &reached, 3);
-        n->comercialyConected = 1;
-        return 1;
+        
+        if(n->numberNodes == countNodes(reached,0)){
+            n->comercialyConected = 1;
+            return 1;
+        }
     }
+    n->comercialyConected = 0;
+    return 0;
 }
 
 
