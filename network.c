@@ -166,7 +166,7 @@ int countNodes(nodeTree * root, int count){
     return count;
 }
 
-void findOneTiers(nodeTree * root, nodeList ** list, int * count ){
+void findTierOnes(nodeTree * root, nodeList ** list, int * count ){
     
     if(root != NULL){
         
@@ -175,8 +175,8 @@ void findOneTiers(nodeTree * root, nodeList ** list, int * count ){
             nodeListInsert(*list, root->node);
         }
         
-        findOneTiers(root->left, list, count);
-        findOneTiers(root->right, list, count);
+        findTierOnes(root->left, list, count);
+        findTierOnes(root->right, list, count);
     }
     return;
 }
@@ -213,7 +213,7 @@ network * createNetwork(char *filename){
 
     }
     n->numberNodes = countNodes(n->nodes,0);
-    findOneTiers(n->nodes, &(n->tierOnes), &(n->tierOneCount));
+    findTierOnes(n->nodes, &(n->tierOnes), &(n->tierOneCount));
     printf("\nNodes count = %d\n", n->numberNodes);
     printf("Tier One count = %d\n", n->tierOneCount);
     printf("\nNetwork Created!\n");

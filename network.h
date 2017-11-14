@@ -16,6 +16,6 @@ void printNetwork(nodeTree * tree);
 
 nodeTree* getNetwork(network *n);
 
-void findOneTiers(nodeTree * root, nodeList ** list, int * count );
+void findTierOnes(nodeTree * root, nodeList ** list, int * count );
 
 #endif
