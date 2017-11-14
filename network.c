@@ -57,6 +57,32 @@ void printList(nodeList* head){
     printf("\n");
 }
 
+
+void printTree(nodeTree * tree){
+    if(tree != NULL){
+        printf("\t %d\n", tree->node->id);
+        printTree(tree->left);
+        printTree(tree->right);
+    }
+    return;
+}
+
+/*
+    only frees the list, nodes only get deleted via network
+*/
+nodeList * freeList(nodeList * head){
+    nodeList * iterator = head;
+    nodeList * deleter;
+    
+    while(iterator != NULL){
+        deleter = iterator;
+        iterator = iterator->next;
+        free(deleter->next);
+        free(deleter);
+    }
+    return NULL;
+}
+
 /*  
     searches a node tree for a specific node
     input:
@@ -88,7 +114,7 @@ nodeTree * searchNode(nodeTree * root, networkNode * lost){
     return(searchPointer);
 }
 
-networkNode * nodeTreeInsert(nodeTree ** root, networkNode* node){
+networkNode * nodeTreeInsert(nodeTree ** root, networkNode* node, int * old){
 
     nodeTree * searchPointer = searchNode(*root, node);
     nodeTree * new;
@@ -99,6 +125,7 @@ networkNode * nodeTreeInsert(nodeTree ** root, networkNode* node){
         new->left = NULL;
         new->right = NULL;
         *root = new;
+        *old = 0;
         return node;
     }
     else if(searchPointer->node->id != node->id){
@@ -114,11 +141,12 @@ networkNode * nodeTreeInsert(nodeTree ** root, networkNode* node){
         else{
             searchPointer->right = new;
         }
+        *old = 0;
         return node;
     }else{
         
     }
-
+    *old = 1;
     return searchPointer->node;
 }
 
@@ -135,6 +163,7 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
 
     networkNode * tailNode = malloc(sizeof(networkNode));
     networkNode* headNode = malloc(sizeof(networkNode));
+    int old = 0;
 
     /*repensar inserção (procurar primeiro e depois inserir (mudar função de inserção))*/
     tailNode->id = tail;
@@ -147,19 +176,19 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
     headNode->providers = NULL;
     headNode->peers = NULL;
 
-    tailNode = nodeTreeInsert(&n->nodes, tailNode);
+    tailNode = nodeTreeInsert(&n->nodes, tailNode, &old);
     
-    headNode = nodeTreeInsert(&n->nodes, headNode);
-
+    headNode = nodeTreeInsert(&n->nodes, headNode, &old);
+    
     switch(relation){
         case 1:
-            nodeTreeInsert(&headNode->providers, tailNode);
+            nodeTreeInsert(&headNode->providers, tailNode, &old);
             break;
         case 2:
-            nodeTreeInsert(&headNode->peers, tailNode);
+            nodeTreeInsert(&headNode->peers, tailNode, &old);
             break;
         case 3:
-            nodeTreeInsert(&headNode->costumers, tailNode);
+            nodeTreeInsert(&headNode->costumers, tailNode, &old);
             break;
         default:
             break;
@@ -192,7 +221,14 @@ void findTierOnes(nodeTree * root, nodeList **   list, int * count ){
 }
 
 /*
-    assumes a peer connection works both ways
+    checks if all tierOne nodes have peer connections to all tierOne nodes
+    assumes a peer connection works both ways, 
+    i.e. 
+    if A has peer to B then is assumed that B has peer to A
+
+    input - network
+    output - 0 if false
+             1 if true
 */
 int checkPeerBetweenTierOnes(network * n){
 
@@ -203,10 +239,10 @@ int checkPeerBetweenTierOnes(network * n){
     while(out_iterator != NULL){
 
         in_iterator = out_iterator->next;
-        printf("Checking %d\n", out_iterator->node->id);
+        //printf("Checking %d\n", out_iterator->node->id);
         while( in_iterator != NULL){
 
-            printf("\t%d\n", in_iterator->node->id);
+            //printf("\t%d\n", in_iterator->node->id);
             found = searchNode(out_iterator->node->peers, in_iterator->node);
             if((found == NULL) || (found->node->id != in_iterator->node->id)){
                 printf("\tNot found!\n");
@@ -214,23 +250,86 @@ int checkPeerBetweenTierOnes(network * n){
             }
             in_iterator = in_iterator->next;    
         }
-
         out_iterator = out_iterator->next;
     }
-    
-
     return 1;
 }
 
-void checkComercialConnected(network * n){
+/*
+    from the internet, just to check how deep it was
+*/
+int maxDepth(nodeTree * node) {
+   if (node==NULL) 
+       return 0;
+   else
+   {
+       /* compute the depth of each subtree */
+       int lDepth = maxDepth(node->left);
+       int rDepth = maxDepth(node->right);
+ 
+       /* use the larger one */
+       if (lDepth > rDepth) 
+           return(lDepth+1);
+       else return(rDepth+1);
+   }
+}
+void findReachability(networkNode * current, nodeTree ** found, int from);
+void callReachability(nodeTree * tree, nodeTree ** found, int from){
 
-    if(checkPeerBetweenTierOnes(n)){
-
-        printf("\nVerified!\n");
-    }else{
-        printf("\nNot Comercially connected\n");
+    if(tree != NULL){
+        findReachability(tree->node, found, from);
+        callReachability(tree->left, found, from);
+        callReachability(tree->right, found, from);
     }
     return;
+
+}
+
+void findReachability(networkNode * current, nodeTree ** found, int from){
+
+        int old = 0;
+        networkNode * inserted = nodeTreeInsert(found, current, &old);
+        
+        /*if is not visited, keep searching*/
+        //printf("\n%d\n", current->id);
+        if(!old){
+            //printf("  %d\n", current->id);
+            switch(from){
+                case 1:
+                    callReachability(inserted->costumers, found, 1);
+                    break;
+                case 2:
+                    callReachability(inserted->costumers, found, 1);
+                    break;
+                case 3:
+                    callReachability(inserted->peers, found, 2);
+                    callReachability(inserted->costumers, found, 1);
+                    break;
+                default:
+                    break;
+            }
+        }
+        return;
+}
+
+/*
+    Checks if a network is comercially connected
+
+    input - network
+    output - 0 if false
+             1 if true
+*/
+int checkComercialConnected(network * n){
+
+    nodeTree * reached = NULL;
+    if(!checkPeerBetweenTierOnes(n)){
+        n->comercialyConected = 0;
+        return 0;
+    }else{
+        findReachability(n->tierOnes->node, &reached, 3);
+        n->comercialyConected = 1;
+        return 1;
+    }
 }
 
 
@@ -267,26 +366,21 @@ network * createNetwork(char *filename){
     }
     n->numberNodes = countNodes(n->nodes,0);
     findTierOnes(n->nodes, &(n->tierOnes), &(n->tierOneCount));
-    checkComercialConnected(n);
+    
     printf("\nNodes count = %d\n", n->numberNodes);
     printf("Tier One count = %d\n", n->tierOneCount);
     printList(n->tierOnes);
     printf("\nNetwork Created!\n");
 
+    printf("\nMax Depht = %d\n", maxDepth(n->nodes));
+    if(checkComercialConnected(n)){
+        printf("Commercialy connected!\n");
+    }else{
+        printf("Not Commercialy connected\n");
+    }
+    
     return(n);
 }
-
-
-
-void printTree(nodeTree * tree){
-    if(tree != NULL){
-        printf("\t %d\n", tree->node->id);
-        printTree(tree->left);
-        printTree(tree->right);
-    }
-    return;
-}
-
 
 void printNetwork(nodeTree * tree){
 
