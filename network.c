@@ -21,15 +21,31 @@ typedef struct _nodeTree{
 
 }nodeTree;
 
+typedef struct _nodeList{
+
+    networkNode * node;
+    struct _nodeList * next;
+}nodeList;
+
 typedef struct _network{
 
     int numberNodes;
+    int tierOneCount;
     int costumerCicles;
     int comercialyConected;
     nodeTree * nodes;
+    nodeList * tierOnes;
 
 }network;
 
+nodeList * nodeListInsert(nodeList * head, networkNode * node){
+
+    nodeList * new = (nodeList*)malloc(sizeof(nodeList));
+    new->node = node;
+    new->next = head;
+
+    return new;
+}
 
 /*  
     searches a node tree for a specific node
@@ -150,6 +166,21 @@ int countNodes(nodeTree * root, int count){
     return count;
 }
 
+void findOneTiers(nodeTree * root, nodeList ** list, int * count ){
+    
+    if(root != NULL){
+        
+        if(root->node->providers == NULL){
+            *count = *count + 1;
+            nodeListInsert(*list, root->node);
+        }
+        
+        findOneTiers(root->left, list, count);
+        findOneTiers(root->right, list, count);
+    }
+    return;
+}
+
 network * createNetwork(char *filename){
 
     FILE * file;
@@ -169,7 +200,9 @@ network * createNetwork(char *filename){
     n->numberNodes = 0;
     n->comercialyConected = 0;
     n->costumerCicles = 0;
+    n->tierOneCount = 0;
     n->nodes = NULL;
+    n->tierOnes = NULL;
 
     /*Reading from file*/
     while(fgets(buff, 200, file)){
@@ -180,10 +213,23 @@ network * createNetwork(char *filename){
 
     }
     n->numberNodes = countNodes(n->nodes,0);
-    printf("Nodes count = %d\n", n->numberNodes);
-    printf("Network Created!");
+    findOneTiers(n->nodes, &(n->tierOnes), &(n->tierOneCount));
+    printf("\nNodes count = %d\n", n->numberNodes);
+    printf("Tier One count = %d\n", n->tierOneCount);
+    printf("\nNetwork Created!\n");
 
     return(n);
+}
+
+
+
+int checkPeerBetweenOneTier(){
+    return 0;
+}
+
+void checkComercialConnected(network n){
+
+    return;
 }
 
 void printTree(nodeTree * tree){
@@ -206,6 +252,7 @@ void printNetwork(nodeTree * tree){
         printf(" %d providers:\n", tree->node->id);
         printTree(tree->node->providers);
         
+        //printf("%d\n",tree->node->id);
         printNetwork(tree->left);
         printNetwork(tree->right);
     }

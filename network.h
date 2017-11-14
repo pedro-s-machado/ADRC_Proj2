@@ -6,6 +6,8 @@ typedef struct _networkNode networkNode;
 
 typedef struct _nodeTree nodeTree;
 
+typedef struct _nodeList nodeList;
+
 typedef struct _network network;
 
 network * createNetwork(char *filename);
@@ -13,5 +15,7 @@ network * createNetwork(char *filename);
 void printNetwork(nodeTree * tree);
 
 nodeTree* getNetwork(network *n);
+
+void findOneTiers(nodeTree * root, nodeList ** list, int * count );
 
 #endif
