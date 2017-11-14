@@ -47,6 +47,16 @@ nodeList * nodeListInsert(nodeList * head, networkNode * node){
     return new;
 }
 
+void printList(nodeList* head){
+
+    nodeList * iterator = head;
+    while(iterator != NULL){
+        printf("%d ", iterator->node->id);
+        iterator = iterator->next;
+    }
+    printf("\n");
+}
+
 /*  
     searches a node tree for a specific node
     input:
@@ -166,13 +176,13 @@ int countNodes(nodeTree * root, int count){
     return count;
 }
 
-void findTierOnes(nodeTree * root, nodeList ** list, int * count ){
+void findTierOnes(nodeTree * root, nodeList **   list, int * count ){
     
     if(root != NULL){
         
         if(root->node->providers == NULL){
             *count = *count + 1;
-            nodeListInsert(*list, root->node);
+            *list = nodeListInsert(*list, root->node);
         }
         
         findTierOnes(root->left, list, count);
@@ -180,6 +190,49 @@ void findTierOnes(nodeTree * root, nodeList ** list, int * count ){
     }
     return;
 }
+
+/*
+    assumes a peer connection works both ways
+*/
+int checkPeerBetweenTierOnes(network * n){
+
+    nodeList * out_iterator = n->tierOnes;
+    nodeList * in_iterator;
+    nodeTree * found;
+
+    while(out_iterator != NULL){
+
+        in_iterator = out_iterator->next;
+        printf("Checking %d\n", out_iterator->node->id);
+        while( in_iterator != NULL){
+
+            printf("\t%d\n", in_iterator->node->id);
+            found = searchNode(out_iterator->node->peers, in_iterator->node);
+            if((found == NULL) || (found->node->id != in_iterator->node->id)){
+                printf("\tNot found!\n");
+                return 0;
+            }
+            in_iterator = in_iterator->next;    
+        }
+
+        out_iterator = out_iterator->next;
+    }
+    
+
+    return 1;
+}
+
+void checkComercialConnected(network * n){
+
+    if(checkPeerBetweenTierOnes(n)){
+
+        printf("\nVerified!\n");
+    }else{
+        printf("\nNot Comercially connected\n");
+    }
+    return;
+}
+
 
 network * createNetwork(char *filename){
 
@@ -214,23 +267,16 @@ network * createNetwork(char *filename){
     }
     n->numberNodes = countNodes(n->nodes,0);
     findTierOnes(n->nodes, &(n->tierOnes), &(n->tierOneCount));
+    checkComercialConnected(n);
     printf("\nNodes count = %d\n", n->numberNodes);
     printf("Tier One count = %d\n", n->tierOneCount);
+    printList(n->tierOnes);
     printf("\nNetwork Created!\n");
 
     return(n);
 }
 
 
-
-int checkPeerBetweenOneTier(){
-    return 0;
-}
-
-void checkComercialConnected(network n){
-
-    return;
-}
 
 void printTree(nodeTree * tree){
     if(tree != NULL){
