@@ -191,6 +191,7 @@ void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destinat
 
     routeNode * searchPointer = searchRoute(*root, destination);
     routeNode * new;
+    int anounce = 0; // 0 - don't announce, 1 - announce
     
     if(searchPointer == NULL){
         new = (routeNode*)malloc(sizeof(routeNode));
@@ -201,8 +202,8 @@ void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destinat
         new->left = NULL;
         new->right = NULL;
         *root = new;
-        /*anounce*/
-        return;
+        
+        announce = 1;
     }
     else if(searchPointer->destination->id != destination->id){
 
@@ -219,15 +220,29 @@ void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destinat
         }
         else{
             searchPointer->right = new;
-        }
-        /*anounce*/
-        return;
+        }        
+        announce = 1;
+
     }else{
         /*
         if exists check if is better
-        better ? anounce
+        better ? anounce = 1;
         worst  ? ignore
         */
+    }
+
+    if(announce){
+        switch(routeType){
+            case 1:
+            case 2:
+                /*announce to costumers*/
+                break;
+            case 3:
+                /*announce to all*/
+                break;
+            default:
+                break;
+        }
     }
     return;
 }
