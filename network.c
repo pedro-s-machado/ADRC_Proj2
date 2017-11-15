@@ -187,12 +187,20 @@ networkNode * nodeTreeInsert(nodeTree ** root, networkNode* node, int * old){
     return searchPointer->node;
 }
 
+void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destination, int hopCount, int routeType)
+
+/*annouce route to a determined type of neib*/
+void announce(){
+
+}
+
 void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destination, int hopCount, int routeType){
 
     routeNode * searchPointer = searchRoute(*root, destination);
     routeNode * new;
-    int anounce = 0; // 0 - don't announce, 1 - announce
+    int announce = 0; // 0 - don't announce, 1 - announce
     
+    /*no routes yet*/
     if(searchPointer == NULL){
         new = (routeNode*)malloc(sizeof(routeNode));
         new->nextHop = nextHop;
@@ -205,6 +213,7 @@ void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destinat
         
         announce = 1;
     }
+    /*new route*/
     else if(searchPointer->destination->id != destination->id){
 
         new = (routeNode*)malloc(sizeof(routeNode));
@@ -222,13 +231,30 @@ void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destinat
             searchPointer->right = new;
         }        
         announce = 1;
+    }
+    /*route exists*/
+    else{
+        
+        /*if new routType is better*/
+        if(searchPointer->routeType < routeType){
+            announce = 1;
+        }
+        /*if routeType is the same*/
+        else if(searchPointer->routeType == routeType){
+            if(searchPointer->hopCount < hopCount){
+                announce = 1;
+            }
+        }
 
-    }else{
-        /*
-        if exists check if is better
-        better ? anounce = 1;
-        worst  ? ignore
-        */
+        /*if better update*/
+        if(announce){
+            searchPointer->nextHop = nextHop;
+            searchPointer->hopCount = hopCount;
+            searchPointer->routeType = routeType;
+
+            new = searchPointer;
+        }
+
     }
 
     if(announce){
