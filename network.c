@@ -3,6 +3,7 @@
 
 
 struct _nodeTree;
+struct _routeNode;
 
 typedef struct _networkNode{
 
@@ -10,8 +11,21 @@ typedef struct _networkNode{
     struct _nodeTree * costumers;
     struct _nodeTree * peers;
     struct _nodeTree * providers;
+    struct _routeNode * routes;
 
 }networkNode;
+
+typedef struct _routeNode{
+
+    int routeType;
+    int hopCount;
+    networkNode * destination;
+    networkNode * nextHop;
+    
+    struct _routeNode * left;
+    struct _routeNode * right;
+
+}routeNode;
 
 typedef struct _nodeTree{
     
@@ -20,6 +34,7 @@ typedef struct _nodeTree{
     struct _nodeTree * right;
 
 }nodeTree;
+
 
 typedef struct _nodeList{
 
@@ -114,6 +129,28 @@ nodeTree * searchNode(nodeTree * root, networkNode * lost){
     return(searchPointer);
 }
 
+routeNode * searchRoute(routeNode * root, networkNode * destination){
+    
+    routeNode * searchPointer = NULL;
+    routeNode * nextNode = root;
+    
+    while(nextNode != NULL){
+        
+        searchPointer = nextNode;
+        if(destination->id < searchPointer->destination->id){
+            nextNode = searchPointer->left;
+        }
+        else if(destination->id > searchPointer->destination->id){
+            nextNode = searchPointer->right;
+        }
+        else{
+            nextNode = NULL;
+        }
+
+    }
+    return(searchPointer);
+}
+
 networkNode * nodeTreeInsert(nodeTree ** root, networkNode* node, int * old){
 
     nodeTree * searchPointer = searchNode(*root, node);
@@ -150,6 +187,50 @@ networkNode * nodeTreeInsert(nodeTree ** root, networkNode* node, int * old){
     return searchPointer->node;
 }
 
+void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destination, int hopCount, int routeType){
+
+    routeNode * searchPointer = searchRoute(*root, destination);
+    routeNode * new;
+    
+    if(searchPointer == NULL){
+        new = (routeNode*)malloc(sizeof(routeNode));
+        new->nextHop = nextHop;
+        new->destination = destination;
+        new->hopCount = hopCount;
+        new->routeType = routeType;
+        new->left = NULL;
+        new->right = NULL;
+        *root = new;
+        /*anounce*/
+        return;
+    }
+    else if(searchPointer->destination->id != destination->id){
+
+        new = (routeNode*)malloc(sizeof(routeNode));
+        new->nextHop = nextHop;
+        new->destination = destination;
+        new->hopCount = hopCount;
+        new->routeType = routeType;
+        new->left = NULL;
+        new->right = NULL;
+
+        if(destination->id < searchPointer->destination->id){
+            searchPointer->left = new;
+        }
+        else{
+            searchPointer->right = new;
+        }
+        /*anounce*/
+        return;
+    }else{
+        /*
+        if exists check if is better
+        better ? anounce
+        worst  ? ignore
+        */
+    }
+    return;
+}
 
 
 /*
@@ -170,11 +251,13 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
     tailNode->costumers = NULL;
     tailNode->providers = NULL;
     tailNode->peers = NULL;
+    tailNode->routes = NULL;
 
     headNode->id = head;
     headNode->costumers = NULL;
     headNode->providers = NULL;
     headNode->peers = NULL;
+    headNode->routes = NULL;
 
     tailNode = nodeTreeInsert(&n->nodes, tailNode, &old);
     
@@ -287,29 +370,29 @@ void callReachability(nodeTree * tree, nodeTree ** found, int from){
 
 void findReachability(networkNode * current, nodeTree ** found, int from){
 
-        int old = 0;
-        networkNode * inserted = nodeTreeInsert(found, current, &old);
-        
-        /*if is not visited, keep searching*/
-        //printf("\n%d\n", current->id);
-        if(!old){
-            //printf("  %d\n", current->id);
-            switch(from){
-                case 1:
-                    callReachability(inserted->costumers, found, 1);
-                    break;
-                case 2:
-                    callReachability(inserted->costumers, found, 1);
-                    break;
-                case 3:
-                    callReachability(inserted->peers, found, 2);
-                    callReachability(inserted->costumers, found, 1);
-                    break;
-                default:
-                    break;
-            }
+    int old = 0;
+    networkNode * inserted = nodeTreeInsert(found, current, &old);
+    
+    /*if is not visited, keep searching*/
+    //printf("\n%d\n", current->id);
+    if(!old){
+        //printf("  %d\n", current->id);
+        switch(from){
+            case 1:
+                callReachability(inserted->costumers, found, 1);
+                break;
+            case 2:
+                callReachability(inserted->costumers, found, 1);
+                break;
+            case 3:
+                callReachability(inserted->peers, found, 2);
+                callReachability(inserted->costumers, found, 1);
+                break;
+            default:
+                break;
         }
-        return;
+    }
+    return;
 }
 
 /*
@@ -335,6 +418,11 @@ int checkComercialConnected(network * n){
     return 0;
 }
 
+
+void routeInfo(){
+
+
+}
 
 network * createNetwork(char *filename){
 
