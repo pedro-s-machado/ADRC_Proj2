@@ -247,7 +247,7 @@ void updateRoute(networkNode * receiver, networkNode* nextHop, networkNode * des
         }
         /*if routeType is the same*/
         else if(searchPointer->routeType == routeType){
-            if(searchPointer->hopCount < hopCount){
+            if(searchPointer->hopCount > hopCount){
                 better = 1;
             }
         }
@@ -267,10 +267,12 @@ void updateRoute(networkNode * receiver, networkNode* nextHop, networkNode * des
         switch(routeType){
             case 1:
             case 2:
-                /*announce to costumers*/
+                announce(receiver->costumers, receiver, new->destination, new->hopCount+1, 1);
                 break;
             case 3:
-                /*announce to all*/
+                announce(receiver->costumers, receiver, new->destination, new->hopCount+1, 1);
+                announce(receiver->peers, receiver, new->destination, new->hopCount+1, 2);
+                announce(receiver->providers, receiver, new->destination, new->hopCount+1, 3);
                 break;
             default:
                 break;
@@ -279,6 +281,17 @@ void updateRoute(networkNode * receiver, networkNode* nextHop, networkNode * des
     return;
 }
 
+void printBestRouteTo(nodeTree * root, networkNode * destination){
+    
+    routeNode * route;
+    if(root != NULL){
+        route = searchRoute(root->node->routes, destination);
+        printf("from: %d, to: %d, use: %d, cost: %d\n", root->node->id, destination->id, route->nextHop->id, route->hopCount);
+        printBestRouteTo(root->left, destination);
+        printBestRouteTo(root->right, destination);
+    }
+    return;
+}
 
 /*
     inserts a node into the network basead on a connection
@@ -465,18 +478,28 @@ int checkComercialConnected(network * n){
     return 0;
 }
 
-
+/*
 void routeInfo(){
 
+}*/
 
+void updateAllRoutes(nodeTree * root, int * count){
+    
+    if(root != NULL){
+        updateRoute(root->node, root->node, root->node, 0, 3);
+        *count = *count + 1;
+        printf("%d\n", *count);
+        updateAllRoutes(root->left, count);
+        updateAllRoutes(root->right, count);
+    }
 }
-
 network * createNetwork(char *filename){
 
     FILE * file;
     char buff[200];
     int tail, head, relation;
     network * n = NULL;
+    int count = 0;
 
     /*Opening file*/
     file = fopen(filename, "r");
@@ -503,6 +526,7 @@ network * createNetwork(char *filename){
 
     }
     n->numberNodes = countNodes(n->nodes,0);
+    /*
     findTierOnes(n->nodes, &(n->tierOnes), &(n->tierOneCount));
     
     printf("\nNodes count = %d\n", n->numberNodes);
@@ -515,8 +539,12 @@ network * createNetwork(char *filename){
         printf("Commercialy connected!\n");
     }else{
         printf("Not Commercialy connected\n");
-    }
-    
+    }*/
+    printf("\nUpdating routes\n");
+    //updateRoute(n->nodes->node, n->nodes->node, n->nodes->node, 0, 3);
+    updateAllRoutes(n->nodes, &count);
+    printf("Acabou\n");
+    //printBestRouteTo(n->nodes, n->nodes->node);
     return(n);
 }
 
