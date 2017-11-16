@@ -187,18 +187,24 @@ networkNode * nodeTreeInsert(nodeTree ** root, networkNode* node, int * old){
     return searchPointer->node;
 }
 
-void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destination, int hopCount, int routeType)
+void updateRoute(networkNode * root, networkNode* nextHop, networkNode * destination, int hopCount, int routeType);
 
 /*annouce route to a determined type of neib*/
-void announce(){
+void announce(nodeTree * root, networkNode * nextHop, networkNode * destination, int hopCount, int routeType){
 
+    if(root != NULL){
+        updateRoute(root->node, nextHop, destination, hopCount, routeType);
+        announce(root->left, nextHop, destination, hopCount, routeType);
+        announce(root->right, nextHop, destination, hopCount, routeType);
+    }
+    return;
 }
 
-void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destination, int hopCount, int routeType){
+void updateRoute(networkNode * receiver, networkNode* nextHop, networkNode * destination, int hopCount, int routeType){
 
-    routeNode * searchPointer = searchRoute(*root, destination);
+    routeNode * searchPointer = searchRoute(receiver->routes, destination);
     routeNode * new;
-    int announce = 0; // 0 - don't announce, 1 - announce
+    int better = 0;
     
     /*no routes yet*/
     if(searchPointer == NULL){
@@ -209,9 +215,9 @@ void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destinat
         new->routeType = routeType;
         new->left = NULL;
         new->right = NULL;
-        *root = new;
+        receiver->routes = new;
         
-        announce = 1;
+        better = 1;
     }
     /*new route*/
     else if(searchPointer->destination->id != destination->id){
@@ -230,24 +236,24 @@ void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destinat
         else{
             searchPointer->right = new;
         }        
-        announce = 1;
+        better = 1;
     }
     /*route exists*/
     else{
         
         /*if new routType is better*/
         if(searchPointer->routeType < routeType){
-            announce = 1;
+            better = 1;
         }
         /*if routeType is the same*/
         else if(searchPointer->routeType == routeType){
             if(searchPointer->hopCount < hopCount){
-                announce = 1;
+                better = 1;
             }
         }
 
         /*if better update*/
-        if(announce){
+        if(better){
             searchPointer->nextHop = nextHop;
             searchPointer->hopCount = hopCount;
             searchPointer->routeType = routeType;
@@ -257,7 +263,7 @@ void updateRoute(routeNode ** root, networkNode* nextHop, networkNode * destinat
 
     }
 
-    if(announce){
+    if(better){
         switch(routeType){
             case 1:
             case 2:
