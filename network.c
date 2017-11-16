@@ -8,6 +8,8 @@ struct _routeNode;
 typedef struct _networkNode{
 
     int id;
+    int visited;
+    int finished;
     struct _nodeTree * costumers;
     struct _nodeTree * peers;
     struct _nodeTree * providers;
@@ -308,12 +310,16 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
 
     /*repensar inserção (procurar primeiro e depois inserir (mudar função de inserção))*/
     tailNode->id = tail;
+    tailNode->visited = 0;
+    tailNode->finished = 0;
     tailNode->costumers = NULL;
     tailNode->providers = NULL;
     tailNode->peers = NULL;
     tailNode->routes = NULL;
 
     headNode->id = head;
+    headNode->visited = 0;
+    headNode->finished = 0;
     headNode->costumers = NULL;
     headNode->providers = NULL;
     headNode->peers = NULL;
@@ -493,6 +499,60 @@ void updateAllRoutes(nodeTree * root, int * count){
         updateAllRoutes(root->right, count);
     }
 }
+
+void specialDFS_part_two(nodeTree * root, int id, int * cicle);
+void specialDFS_part_one(networkNode * root, int id, int * cicle){
+    
+    root->visited = id;
+    if((root != NULL) && !(*cicle)){
+        specialDFS_part_two(root->costumers, id, cicle);
+    }
+    root->finished = id;
+    return;
+}
+
+void specialDFS_part_two(nodeTree * root, int id, int * cicle){
+
+    if((root != NULL) && !(*cicle)){
+        if(root->node->visited == id){
+            if(!(root->node->finished == id)){
+                *cicle = 1;
+                return;
+            }
+        }
+        else{
+            specialDFS_part_one(root->node, id, cicle);
+        }
+    
+    specialDFS_part_two(root->left, id, cicle);
+    specialDFS_part_two(root->right, id, cicle);
+    }
+    return;
+
+}
+
+
+int checkCostumerCicles(network * n){
+
+    nodeList * iterator;
+    int costumerCicle = 0;
+
+    if(!(n->tierOneCount)){
+        printf("Finding!\n");
+        findTierOnes(n->nodes, &(n->tierOnes), &(n->tierOneCount));
+        printf("All tier-1 found!\n");
+    }
+    
+    iterator = n->tierOnes;
+    while((iterator != NULL) && !costumerCicle){
+        printf("%d\n", iterator->node->id);
+        specialDFS_part_one(iterator->node, iterator->node->id, &costumerCicle);
+        iterator = iterator->next;
+    }
+
+    return costumerCicle;
+
+}
 network * createNetwork(char *filename){
 
     FILE * file;
@@ -540,11 +600,18 @@ network * createNetwork(char *filename){
     }else{
         printf("Not Commercialy connected\n");
     }*/
-    printf("\nUpdating routes\n");
+    //printf("\nUpdating routes\n");
     //updateRoute(n->nodes->node, n->nodes->node, n->nodes->node, 0, 3);
-    updateAllRoutes(n->nodes, &count);
-    printf("Acabou\n");
+    //updateAllRoutes(n->nodes, &count);
+    //printf("Acabou\n");
     //printBestRouteTo(n->nodes, n->nodes->node);
+    if(checkCostumerCicles(n)){
+        printf("Costumer Cicle found!");
+    }
+    else{
+        printf("No costumer cicle!");
+    }
+
     return(n);
 }
 
