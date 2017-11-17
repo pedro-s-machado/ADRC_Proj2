@@ -602,9 +602,9 @@ network * createNetwork(char *filename){
 
     }
     n->numberNodes = countNodes(n->nodes,0);
-    /*
-    findTierOnes(n->nodes, &(n->tierOnes), &(n->tierOneCount));
     
+    findTierOnes(n->nodes, &(n->tierOnes), &(n->tierOneCount));
+    /*
     printf("\nNodes count = %d\n", n->numberNodes);
     printf("Tier One count = %d\n", n->tierOneCount);
     printList(n->tierOnes);
