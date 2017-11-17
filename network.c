@@ -696,7 +696,8 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
             listPtr = customers;
             while (listPtr != NULL) {
                 nodePtr = listPtr->node;
-                nodeTreeInsert(&tempViaCustomersTree, nodePtr, 0);
+                int i=0;
+                nodeTreeInsert(&tempViaCustomersTree, nodePtr, &i);
                 listPtr = listPtr->next;
             }
             
@@ -777,7 +778,7 @@ nodeList* removeFromNodeList(nodeList* list, networkNode* node) {
             free(ptr2);
             return list;
         }
-        list = list->next;
+        ptr2 = ptr2->next;
     }
     return list;
 }
