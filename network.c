@@ -334,8 +334,8 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
     tailNode->providers = NULL;
     tailNode->peers = NULL;
     tailNode->routes = NULL;
-    tailNode->customers_tree = NULL;
-    tailNode->peers_tree = NULL;
+    tailNode->viaCustomers_tree = NULL;
+    tailNode->viaPeers_tree = NULL;
 
     headNode->id = head;
     headNode->visited = 0;
@@ -344,8 +344,8 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
     headNode->providers = NULL;
     headNode->peers = NULL;
     headNode->routes = NULL;
-    tailNode->customers_tree = NULL;
-    tailNode->peers_tree = NULL;
+    tailNode->viaCustomers_tree = NULL;
+    tailNode->viaPeers_tree = NULL;
 
     tailNode = nodeTreeInsert(&n->nodes, tailNode, &old);
     
@@ -680,6 +680,9 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
         return node->viaCustomers_tree;
     }
     else {
+        
+        nodeTree *tempViaCustomersTree = NULL, *tempViaPeersTree = NULL;
+        
         // Listing of the neighbours to whom to make a request
         networkNode *nodePtr = NULL;
         nodeList *customers = NULL, *peers = NULL, *listPtr = NULL;
@@ -688,15 +691,28 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
         listPtr = customers;
         while (listPtr != NULL) {
             nodePtr = listPtr->node;
-            produceStats(nodePtr, resetCounters);
+            tempViaCustomersTree = produceStats(nodePtr, resetCounters);
             listPtr = listPtr->next;
         }
         listPtr = peers;
         while (listPtr != NULL) {
             nodePtr = listPtr->node;
-            produceStats(nodePtr, resetCounters);
+            tempViaPeersTree = produceStats(nodePtr, resetCounters);
             listPtr = listPtr->next;
         }
+        
+        
+        // Adding my own customers to the tree
+        listPtr = customers;
+        while (listPtr != NULL) {
+            nodePtr = listPtr->node;
+            nodeTreeInsert(&tempViaCustomersTree, nodePtr, 0);
+            listPtr = listPtr->next;
+        }
+        
+        // Counting the number of destinations for each type of route
+        
+        // Resetting
         freeNodeList(customers);
         freeNodeList(peers);
     }
