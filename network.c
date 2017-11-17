@@ -724,8 +724,10 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
             while (listPtr != NULL) {
                 nodePtr = listPtr->node;
                 // Check presence of nodePtr in tempViaCustomersTree, if it is there, remove it from tempViaPeersList;
-                if (nodePtr == searchNode(tempViaCustomersTree, nodePtr)->node) {
-                    tempViaPeersList = removeFromNodeList(tempViaPeersList, nodePtr);
+                if(nodePtr != NULL){
+                    if (nodePtr == searchNode(tempViaCustomersTree, nodePtr)->node) {
+                        tempViaPeersList = removeFromNodeList(tempViaPeersList, nodePtr);
+                    }
                 }
                 
                 listPtr = listPtr->next;
