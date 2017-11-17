@@ -691,13 +691,6 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
             tempViaCustomersTree = produceStats(nodePtr, resetCounters);
             listPtr = listPtr->next;
         }
-        listPtr = peers;
-        while (listPtr != NULL) {
-            nodePtr = listPtr->node;
-            tempViaPeersTree = produceStats(nodePtr, resetCounters);
-            listPtr = listPtr->next;
-        }
-        
         if (!resetCounters) {
             // Adding my own customers to the tree
             listPtr = customers;
@@ -707,7 +700,19 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
                 listPtr = listPtr->next;
             }
             
-            //
+            // Saving the customers tree
+            node->viaCustomers_tree = tempViaCustomersTree;
+        }
+        
+        listPtr = peers;
+        while (listPtr != NULL) {
+            nodePtr = listPtr->node;
+            tempViaPeersTree = produceStats(nodePtr, resetCounters);
+            listPtr = listPtr->next;
+        }
+        if (!resetCounters) {
+            
+            // Now find the peers
             tempViaPeersList = makeNodeListFromNodeTree(tempViaPeersTree, tempViaPeersList);
             listPtr = tempViaPeersList;
             while (listPtr != NULL) {
@@ -720,8 +725,7 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
                 listPtr = listPtr->next;
             }
             
-            // Saving...
-            node->viaCustomers_tree = tempViaCustomersTree;
+            // Saving the peers list...
             node->viaPeers_list = tempViaPeersList;
             
             // Counting....
@@ -801,7 +805,9 @@ void showStats(network* n) {
     printf("Total number of customer elected-routes :\t%i (%i%%)\n", a, 100*a/(a+b+c));
     printf("Total number of peer elected-routes :\t%i (%i%%)\n", b, 100*b/(a+b+c));
     printf("Total number of provider elected-routes :\t%i (%i%%)\n", c, 100*c/(a+b+c));
+    printf("Resetting stat variables\n");
     produceStats(n->tierOnes->node, 1);
+    printf("Stats variables reset\n");
 }
 
 int countNoCustomerRoutesInTree(nodeTree* node) {
