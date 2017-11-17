@@ -129,11 +129,6 @@ nodeList * freeList(nodeList * head){
 */
 nodeTree * searchNode(nodeTree * root, networkNode * lost){
     
-    if (lost == NULL) {
-        printf("SEARCHING A NULL NODE\n");
-        exit(-1);
-    }
-    
     nodeTree * searchPointer = NULL;
     nodeTree * nextNode = root;
     
