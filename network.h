@@ -27,6 +27,7 @@ int countNodesInTree(nodeTree* tree);
 int countNodesInList(nodeList* list);
 int countNoPeerRoutesInTree(nodeTree* );
 int countNoCustomerRoutesInTree(nodeTree* );
-
+void mergeTree2IntoTree1(nodeTree* tree1, nodeTree* tree2);
+void addList2toList1(nodeList* list1, nodeList* list2);
 void showStats(network* n);
 #endif

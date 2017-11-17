@@ -672,12 +672,14 @@ nodeList* makeNodeListFromNodeTree(nodeTree* tree, nodeList* ptr) {
 
 nodeTree* produceStats(networkNode* node, int resetCounters) {
     
+    printf("Producing stats at node %l\n", node->id);
+    
     if (!resetCounters && (node->viaCustomers_tree != NULL || node->viaPeers_list != NULL)) {
         return node->viaCustomers_tree;
     }
     else {
         
-        nodeTree *tempViaCustomersTree = NULL, *tempViaPeersTree = NULL;
+        nodeTree *tempViaCustomersTree = NULL, *tempViaPeersTree = NULL, *tempViaPeersTree2 = NULL;
         nodeList *tempViaPeersList = NULL;
         
         // Listing of the neighbours to whom to make a request
@@ -689,6 +691,7 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
         while (listPtr != NULL) {
             nodePtr = listPtr->node;
             tempViaCustomersTree = produceStats(nodePtr, resetCounters);
+            mergeTree2IntoTree1(node->viaCustomers_tree, tempViaCustomersTree);
             listPtr = listPtr->next;
         }
         if (!resetCounters) {
@@ -708,7 +711,8 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
         listPtr = peers;
         while (listPtr != NULL) {
             nodePtr = listPtr->node;
-            tempViaPeersTree = produceStats(nodePtr, resetCounters);
+            tempViaPeersTree2 = produceStats(nodePtr, resetCounters);
+            mergeTree2IntoTree1(tempViaPeersTree, tempViaPeersTree2);
             listPtr = listPtr->next;
         }
         if (!resetCounters) {
@@ -822,6 +826,26 @@ int countNoPeerRoutesInTree(nodeTree* node) {
     else
         return node->node->peerRouteNodes + countNoPeerRoutesInTree(node->left) + countNoPeerRoutesInTree(node->right);
 }
+
+void mergeTree2IntoTree1(nodeTree* tree1, nodeTree* tree2) {
+    int i =0;
+    if (tree2 != NULL) {
+        mergeTree2IntoTree1(tree1, tree2->right);
+        mergeTree2IntoTree1(tree1, tree2->left);
+        nodeTreeInsert(&tree1, tree2->node, &i);
+        free(tree2);
+    }
+}
+                            
+void addList2toList1(nodeList* list1, nodeList* list2) {
+    if (list1 == NULL)
+        exit(-1);
+    while (list1->next != NULL) {
+        list1 = list1->next;
+    }
+    list1->next = list2;
+}
+                                
 
 #endif
 

@@ -5,6 +5,7 @@
 int main(int argc, char * argv[]){
 
     network *n;
+    
     if(argc > 1){
     
         n = createNetwork(argv[1]);
