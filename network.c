@@ -672,7 +672,7 @@ nodeList* makeNodeListFromNodeTree(nodeTree* tree, nodeList* ptr) {
 
 nodeTree* produceStats(networkNode* node, int resetCounters) {
     
-    printf("Producing stats at node %l\n", node->id);
+    printf("Producing stats at node %i\n", node->id);
     
     if (!resetCounters && (node->viaCustomers_tree != NULL || node->viaPeers_list != NULL)) {
         return node->viaCustomers_tree;
@@ -833,7 +833,6 @@ void mergeTree2IntoTree1(nodeTree* tree1, nodeTree* tree2) {
         mergeTree2IntoTree1(tree1, tree2->right);
         mergeTree2IntoTree1(tree1, tree2->left);
         nodeTreeInsert(&tree1, tree2->node, &i);
-        free(tree2);
     }
 }
                             
