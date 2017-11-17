@@ -796,9 +796,9 @@ void showStats(network* n) {
     int a=countNoCustomerRoutesInTree(n->nodes),b=countNoPeerRoutesInTree(n->nodes),c;
     c = (n->numberNodes)*((n->numberNodes) - 1) - a - b;
     printf("Total number of nodes :\t\t%i\n",n->numberNodes);
-    printf("Total number of customer elected-routes :\t%i\n", a);
-    printf("Total number of peer elected-routes :\t%i\n", b);
-    printf("Total number of provider elected-routes :\t%i\n", c);
+    printf("Total number of customer elected-routes :\t%i (%i%%)\n", a, 100*a/(a+b+c));
+    printf("Total number of peer elected-routes :\t%i (%i%%)\n", b, 100*b/(a+b+c));
+    printf("Total number of provider elected-routes :\t%i (%i%%)\n", c, 100*c/(a+b+c));
     produceStats(n->tierOnes->node, 1);
 }
 
