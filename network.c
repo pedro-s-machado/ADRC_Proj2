@@ -676,8 +676,7 @@ nodeList* makeNodeListFromNodeTree(nodeTree* tree, nodeList* ptr) {
 
 nodeTree* produceStats(networkNode* node, int resetCounters) {
     
-    printf("Producing stats at node %i\n", node->id);
-    
+    	    
     if (!resetCounters && (node->viaCustomers_tree != NULL || node->viaPeers_list != NULL)) {
         return node->viaCustomers_tree;
     }
@@ -695,7 +694,7 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
         while (listPtr != NULL) {
             nodePtr = listPtr->node;
             tempViaCustomersTree = produceStats(nodePtr, resetCounters);
-            mergeTree2IntoTree1(node->viaCustomers_tree, tempViaCustomersTree);
+            mergeTree2IntoTree1inefficiently(node->viaCustomers_tree, tempViaCustomersTree);
             listPtr = listPtr->next;
         }
         if (!resetCounters) {
@@ -716,7 +715,7 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
         while (listPtr != NULL) {
             nodePtr = listPtr->node;
             tempViaPeersTree2 = produceStats(nodePtr, resetCounters);
-            mergeTree2IntoTree1(tempViaPeersTree, tempViaPeersTree2);
+            mergeTree2IntoTree1inefficiently(tempViaPeersTree, tempViaPeersTree2);
             listPtr = listPtr->next;
         }
         if (!resetCounters) {
@@ -831,12 +830,11 @@ int countNoPeerRoutesInTree(nodeTree* node) {
         return node->node->peerRouteNodes + countNoPeerRoutesInTree(node->left) + countNoPeerRoutesInTree(node->right);
 }
 
-void mergeTree2IntoTree1(nodeTree* tree1, nodeTree* tree2) {
-    int i =0;
-    if (tree2 != NULL) {
-        mergeTree2IntoTree1(tree1, tree2->right);
-        mergeTree2IntoTree1(tree1, tree2->left);
-        nodeTreeInsert(&tree1, tree2->node, &i);
+void mergeTree2IntoTree1inefficiently(nodeTree* tree1, nodeTree* tree2) {
+    if (tree1 != NULL) {
+        while (tree1->left != NULL)
+            tree1 = tree1->left;
+        tree1->left = tree2;
     }
 }
                             
