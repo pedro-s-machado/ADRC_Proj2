@@ -628,10 +628,10 @@ network * createNetwork(char *filename){
     */
     checkCostumerCicles(n->nodes, &(n->costumerCicles));
     if(n->costumerCicles){
-        printf("Costumer Cicle found!\n");
+        printf("Customer Cycle found!\n");
     }
     else{
-        printf("No costumer cicle!\n");
+        printf("No customer cycle!\n");
     }
 
     return(n);
@@ -806,9 +806,7 @@ int countNodesInList(nodeList* list) {
 }
 
 void showStats(network* n) {
-    printf("Entered showStats\n");
     produceStats(n->tierOnes->node, 0);
-    printf("Statsproduced\n");
     int a=countNoCustomerRoutesInTree(n->nodes),b=countNoPeerRoutesInTree(n->nodes),c;
     c = (n->numberNodes)*((n->numberNodes) - 1) - a - b;
     printf("Total number of nodes :\t\t\t\t\t\t%i\n",n->numberNodes);
