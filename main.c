@@ -5,7 +5,6 @@
 int main(int argc, char * argv[]){
 
     network *n;
-    if(argc >= 1){
     if(argc > 1){
     
         n = createNetwork(argv[1]);
@@ -20,4 +19,3 @@ int main(int argc, char * argv[]){
     }
 
     exit(0);
-}}
