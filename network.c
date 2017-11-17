@@ -336,6 +336,8 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
     tailNode->routes = NULL;
     tailNode->viaCustomers_tree = NULL;
     tailNode->viaPeers_list = NULL;
+    tailNode->customerRouteNodes = 0;
+    tailNode->peerRouteNodes = 0;
 
     headNode->id = head;
     headNode->visited = 0;
@@ -344,8 +346,10 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
     headNode->providers = NULL;
     headNode->peers = NULL;
     headNode->routes = NULL;
-    tailNode->viaCustomers_tree = NULL;
-    tailNode->viaPeers_list = NULL;
+    headNode->viaCustomers_tree = NULL;
+    headNode->viaPeers_list = NULL;
+    headNode->customerRouteNodes = 0;
+    headNode->peerRouteNodes = 0;
 
     tailNode = nodeTreeInsert(&n->nodes, tailNode, &old);
     
