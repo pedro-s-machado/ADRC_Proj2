@@ -679,7 +679,7 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
     if (!resetCounters && (node->viaCustomers_tree != NULL || node->viaPeers_tree != NULL)) {
         return node->viaCustomers_tree;
     }
-    else {
+    else if (!resetCounters) {
         
         nodeTree *tempViaCustomersTree = NULL, *tempViaPeersTree = NULL;
         nodeList *tempViaPeersList = NULL;
@@ -713,22 +713,24 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
         
         //
         tempViaPeersList = makeNodeListFromNodeTree(tempViaPeersTree, tempViaPeersList);
-        listPtr = peers;
+        listPtr = tempViaPeersList;
         while (listPtr != NULL) {
             nodePtr = listPtr->node;
             // Check presence of nodePtr in tempViaCustomersTree, if it is there, remove it from tempViaPeersList;
-            
-            
-            
+            if (nodePtr == searchNode(tempViaCustomersTree, nodePtr)->node) {
+                tempViaPeersList = removeFromNodeList(tempViaPeersList, nodePtr);
+            }
             
             listPtr = listPtr->next;
         }
         
         // More counting....
         
-        // Resetting
-        freeNodeList(customers);
-        freeNodeList(peers);
+    }
+    else {
+        // Resetting the whole thing
+        //freeNodeList(customers);
+        //freeNodeList(peers);
     }
 
     return NULL;
