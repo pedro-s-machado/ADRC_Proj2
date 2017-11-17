@@ -1,5 +1,9 @@
+#ifndef network_c
+#define network_c
+
 #include <stdio.h>
 #include <stdlib.h>
+#include "network.h"
 
 
 struct _nodeTree;
@@ -14,10 +18,16 @@ typedef struct _networkNode{
     int visited;
     int finished;
     
-    /* BST's together listing all direct neighbours at a node */
+    /* BST's of all direct neighbours at a node */
     struct _nodeTree * costumers;
     struct _nodeTree * peers;
     struct _nodeTree * providers;
+    
+    /* BST's to list (in trees) nodes according to type of prefered-route */
+    struct _nodeTree * viaCustomers_tree;
+    struct _nodeTree * viaPeers_tree;
+    /* And the number of elements in these BST's */
+    int customerRouteNodes, peerRouteNodes;
     
     /* Routing table (BST) at a node (will not contain route to all nodes, too inefficient) */
     struct _routeNode * routes;
@@ -324,6 +334,8 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
     tailNode->providers = NULL;
     tailNode->peers = NULL;
     tailNode->routes = NULL;
+    tailNode->customers_tree = NULL;
+    tailNode->peers_tree = NULL;
 
     headNode->id = head;
     headNode->visited = 0;
@@ -332,6 +344,8 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
     headNode->providers = NULL;
     headNode->peers = NULL;
     headNode->routes = NULL;
+    tailNode->customers_tree = NULL;
+    tailNode->peers_tree = NULL;
 
     tailNode = nodeTreeInsert(&n->nodes, tailNode, &old);
     
@@ -642,3 +656,71 @@ void printNetwork(nodeTree * tree){
 nodeTree* getNetwork(network *n){
     return n->nodes;
 }
+
+nodeList* makeNodeListFromNodeTree(nodeTree* tree, nodeList* ptr) {
+    if (tree != NULL) {
+        if (tree->left != NULL) {
+            ptr = makeNodeListFromNodeTree(tree->left, ptr);
+        }
+        if (tree->right != NULL) {
+            ptr = makeNodeListFromNodeTree(tree->right, ptr);
+        }
+        nodeList *new_entry = malloc(sizeof(nodeList));
+        new_entry->node = tree->node;
+        new_entry->next = ptr;
+        return new_entry;
+    }
+    else
+        return NULL;
+}
+
+nodeTree* produceStats(networkNode* node, int resetCounters) {
+    
+    if (!resetCounters && (node->viaCustomers_tree != NULL || node->viaPeers_tree != NULL)) {
+        return node->viaCustomers_tree;
+    }
+    else {
+        // Listing of the neighbours to whom to make a request
+        networkNode *nodePtr = NULL;
+        nodeList *customers = NULL, *peers = NULL, *listPtr = NULL;
+        customers = makeNodeListFromNodeTree(node->costumers, customers);
+        peers = makeNodeListFromNodeTree(node->peers, peers);
+        listPtr = customers;
+        while (listPtr != NULL) {
+            nodePtr = listPtr->node;
+            produceStats(nodePtr, resetCounters);
+            listPtr = listPtr->next;
+        }
+        listPtr = peers;
+        while (listPtr != NULL) {
+            nodePtr = listPtr->node;
+            produceStats(nodePtr, resetCounters);
+            listPtr = listPtr->next;
+        }
+        freeNodeList(customers);
+        freeNodeList(peers);
+    }
+
+    return NULL;
+}
+
+void freeNodeList(nodeList* list) {
+    if (list!=NULL) {
+        if (list->next != NULL)
+            freeNodeList(list->next);
+        free(list);
+    }
+}
+
+void freeNodeTree(nodeTree* tree) {
+    if (tree!=NULL) {
+        if (tree->right != NULL)
+            freeNodeTree(tree->right);
+        if (tree->left != NULL)
+            freeNodeTree(tree->left);
+        free(tree);
+    }
+}
+
+#endif
+

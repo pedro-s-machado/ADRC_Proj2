@@ -18,4 +18,10 @@ nodeTree* getNetwork(network *n);
 
 void findTierOnes(nodeTree * root, nodeList ** list, int * count );
 
+nodeTree* produceStats(networkNode* , int );
+nodeList* makeNodeListFromNodeTree(nodeTree* , nodeList* );
+void freeNodeList(nodeList*);
+void freeNodeTree(nodeTree*);
+
+
 #endif
