@@ -694,7 +694,7 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
         while (listPtr != NULL) {
             nodePtr = listPtr->node;
             tempViaCustomersTree = produceStats(nodePtr, resetCounters);
-            mergeTree2IntoTree1inefficiently(node->viaCustomers_tree, tempViaCustomersTree);
+            node->viaCustomers_tree = mergeTree2IntoTree1inefficiently(node->viaCustomers_tree, tempViaCustomersTree);
             listPtr = listPtr->next;
         }
         if (!resetCounters) {
@@ -715,7 +715,7 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
         while (listPtr != NULL) {
             nodePtr = listPtr->node;
             tempViaPeersTree2 = produceStats(nodePtr, resetCounters);
-            mergeTree2IntoTree1inefficiently(tempViaPeersTree, tempViaPeersTree2);
+            tempViaPeersTree = mergeTree2IntoTree1inefficiently(tempViaPeersTree, tempViaPeersTree2);
             listPtr = listPtr->next;
         }
         if (!resetCounters) {
@@ -830,12 +830,15 @@ int countNoPeerRoutesInTree(nodeTree* node) {
         return node->node->peerRouteNodes + countNoPeerRoutesInTree(node->left) + countNoPeerRoutesInTree(node->right);
 }
 
-void mergeTree2IntoTree1inefficiently(nodeTree* tree1, nodeTree* tree2) {
+nodeTree* mergeTree2IntoTree1inefficiently(nodeTree* tree1, nodeTree* tree2) {
     if (tree1 != NULL) {
         while (tree1->left != NULL)
             tree1 = tree1->left;
         tree1->left = tree2;
+        return tree1;
     }
+    else
+        return tree2;
 }
                             
 void addList2toList1(nodeList* list1, nodeList* list2) {
