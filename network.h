@@ -22,6 +22,7 @@ nodeTree* produceStats(networkNode* , int );
 nodeList* makeNodeListFromNodeTree(nodeTree* , nodeList* );
 void freeNodeList(nodeList*);
 void freeNodeTree(nodeTree*);
+nodeList* removeFromNodeList(nodeList*, networkNode*);
 
 
 #endif

@@ -682,6 +682,7 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
     else {
         
         nodeTree *tempViaCustomersTree = NULL, *tempViaPeersTree = NULL;
+        nodeList *tempViaPeersList = NULL;
         
         // Listing of the neighbours to whom to make a request
         networkNode *nodePtr = NULL;
@@ -710,7 +711,20 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
             listPtr = listPtr->next;
         }
         
-        // Counting the number of destinations for each type of route
+        //
+        tempViaPeersList = makeNodeListFromNodeTree(tempViaPeersTree, tempViaPeersList);
+        listPtr = peers;
+        while (listPtr != NULL) {
+            nodePtr = listPtr->node;
+            // Check presence of nodePtr in tempViaCustomersTree, if it is there, remove it from tempViaPeersList;
+            
+            
+            
+            
+            listPtr = listPtr->next;
+        }
+        
+        // More counting....
         
         // Resetting
         freeNodeList(customers);
@@ -736,6 +750,24 @@ void freeNodeTree(nodeTree* tree) {
             freeNodeTree(tree->left);
         free(tree);
     }
+}
+
+nodeList* removeFromNodeList(nodeList* list, networkNode* node) {
+    if (list->node == node) {
+        nodeList* ret_value = list->next;
+        free(list);
+        return ret_value;
+    }
+    nodeList *ptr1 = list, *ptr2 = list->next;
+    while (ptr2 != NULL) {
+        if (ptr2->node == node) {
+            ptr1->next = ptr2->next;
+            free(ptr2);
+            return list;
+        }
+        list = list->next;
+    }
+    return list;
 }
 
 #endif
