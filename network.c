@@ -6,13 +6,20 @@ struct _nodeTree;
 struct _routeNode;
 
 typedef struct _networkNode{
-
+    
+    /* Intrinsic information of an AS (node) */
     int id;
+    
+    /* Used in the cycle-detection procedure */
     int visited;
     int finished;
+    
+    /* BST's together listing all direct neighbours at a node */
     struct _nodeTree * costumers;
     struct _nodeTree * peers;
     struct _nodeTree * providers;
+    
+    /* Routing table (BST) at a node (will not contain route to all nodes, too inefficient) */
     struct _routeNode * routes;
 
 }networkNode;
@@ -50,7 +57,10 @@ typedef struct _network{
     int tierOneCount;
     int costumerCicles;
     int comercialyConected;
+    
+    /* BST of all nodes */
     nodeTree * nodes;
+    /* BST of all tier-1 nodes */
     nodeList * tierOnes;
 
 }network;
@@ -84,9 +94,7 @@ void printTree(nodeTree * tree){
     return;
 }
 
-/*
-    only frees the list, nodes only get deleted via network
-*/
+/* only frees the list, nodes only get deleted via network */
 nodeList * freeList(nodeList * head){
     nodeList * iterator = head;
     nodeList * deleter;
