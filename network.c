@@ -25,7 +25,7 @@ typedef struct _networkNode{
     
     /* BST's to list (in trees) nodes according to type of prefered-route */
     struct _nodeTree * viaCustomers_tree;
-    struct _nodeTree * viaPeers_tree;
+    struct _nodeList * viaPeers_list;
     /* And the number of elements in these BST's */
     int customerRouteNodes, peerRouteNodes;
     
@@ -335,7 +335,7 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
     tailNode->peers = NULL;
     tailNode->routes = NULL;
     tailNode->viaCustomers_tree = NULL;
-    tailNode->viaPeers_tree = NULL;
+    tailNode->viaPeers_list = NULL;
 
     headNode->id = head;
     headNode->visited = 0;
@@ -345,7 +345,7 @@ network * networkConnectionInsert(network * n ,int tail, int head, int relation)
     headNode->peers = NULL;
     headNode->routes = NULL;
     tailNode->viaCustomers_tree = NULL;
-    tailNode->viaPeers_tree = NULL;
+    tailNode->viaPeers_list = NULL;
 
     tailNode = nodeTreeInsert(&n->nodes, tailNode, &old);
     
@@ -676,10 +676,10 @@ nodeList* makeNodeListFromNodeTree(nodeTree* tree, nodeList* ptr) {
 
 nodeTree* produceStats(networkNode* node, int resetCounters) {
     
-    if (!resetCounters && (node->viaCustomers_tree != NULL || node->viaPeers_tree != NULL)) {
+    if (!resetCounters && (node->viaCustomers_tree != NULL || node->viaPeers_list != NULL)) {
         return node->viaCustomers_tree;
     }
-    else if (!resetCounters) {
+    else {
         
         nodeTree *tempViaCustomersTree = NULL, *tempViaPeersTree = NULL;
         nodeList *tempViaPeersList = NULL;
@@ -702,38 +702,48 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
             listPtr = listPtr->next;
         }
         
-        
-        // Adding my own customers to the tree
-        listPtr = customers;
-        while (listPtr != NULL) {
-            nodePtr = listPtr->node;
-            nodeTreeInsert(&tempViaCustomersTree, nodePtr, 0);
-            listPtr = listPtr->next;
-        }
-        
-        //
-        tempViaPeersList = makeNodeListFromNodeTree(tempViaPeersTree, tempViaPeersList);
-        listPtr = tempViaPeersList;
-        while (listPtr != NULL) {
-            nodePtr = listPtr->node;
-            // Check presence of nodePtr in tempViaCustomersTree, if it is there, remove it from tempViaPeersList;
-            if (nodePtr == searchNode(tempViaCustomersTree, nodePtr)->node) {
-                tempViaPeersList = removeFromNodeList(tempViaPeersList, nodePtr);
+        if (!resetCounters) {
+            // Adding my own customers to the tree
+            listPtr = customers;
+            while (listPtr != NULL) {
+                nodePtr = listPtr->node;
+                nodeTreeInsert(&tempViaCustomersTree, nodePtr, 0);
+                listPtr = listPtr->next;
             }
             
-            listPtr = listPtr->next;
+            //
+            tempViaPeersList = makeNodeListFromNodeTree(tempViaPeersTree, tempViaPeersList);
+            listPtr = tempViaPeersList;
+            while (listPtr != NULL) {
+                nodePtr = listPtr->node;
+                // Check presence of nodePtr in tempViaCustomersTree, if it is there, remove it from tempViaPeersList;
+                if (nodePtr == searchNode(tempViaCustomersTree, nodePtr)->node) {
+                    tempViaPeersList = removeFromNodeList(tempViaPeersList, nodePtr);
+                }
+                
+                listPtr = listPtr->next;
+            }
+            
+            // Saving...
+            node->viaCustomers_tree = tempViaCustomersTree;
+            node->viaPeers_list = tempViaPeersList;
+            
+            // Counting....
+            node->customerRouteNodes = countNodesInTree(tempViaCustomersTree);
+            node->peerRouteNodes = countNodesInList(tempViaPeersList);
+            
+            return node->viaCustomers_tree;
         }
-        
-        // More counting....
-        
+        else {
+            node->customerRouteNodes = 0;
+            node->peerRouteNodes = 0;
+            freeNodeTree(node->viaCustomers_tree);
+            node->viaCustomers_tree = NULL;
+            freeNodeList(node->viaPeers_list);
+            node->viaPeers_list = NULL;
+            return NULL;
+        }
     }
-    else {
-        // Resetting the whole thing
-        //freeNodeList(customers);
-        //freeNodeList(peers);
-    }
-
-    return NULL;
 }
 
 void freeNodeList(nodeList* list) {
@@ -770,6 +780,43 @@ nodeList* removeFromNodeList(nodeList* list, networkNode* node) {
         list = list->next;
     }
     return list;
+}
+
+int countNodesInTree(nodeTree* tree) {
+    if (tree == NULL)
+        return 0;
+    else
+        return 1 + countNodesInTree(tree->left)+countNodesInTree(tree->right);
+}
+int countNodesInList(nodeList* list) {
+    if (list == NULL)
+        return 0;
+    else
+        return 1 + countNodesInList(list->next);
+}
+
+void showStats(network* n) {
+    produceStats(n->tierOnes->node, 0);
+    int a=countNoCustomerRoutesInTree(n->nodes),b=countNoPeerRoutesInTree(n->nodes),c;
+    c = (n->numberNodes)*((n->numberNodes) - 1) - a - b;
+    printf("Total number of nodes :\t\t%i\n",n->numberNodes);
+    printf("Total number of customer elected-routes :\t%i\n", a);
+    printf("Total number of peer elected-routes :\t%i\n", b);
+    printf("Total number of provider elected-routes :\t%i\n", c);
+    produceStats(n->tierOnes->node, 1);
+}
+
+int countNoCustomerRoutesInTree(nodeTree* node) {
+    if (node == NULL)
+        return 0;
+    else
+        return node->node->customerRouteNodes + countNoCustomerRoutesInTree(node->left) + countNoCustomerRoutesInTree(node->right);
+}
+int countNoPeerRoutesInTree(nodeTree* node) {
+    if (node == NULL)
+        return 0;
+    else
+        return node->node->peerRouteNodes + countNoPeerRoutesInTree(node->left) + countNoPeerRoutesInTree(node->right);
 }
 
 #endif

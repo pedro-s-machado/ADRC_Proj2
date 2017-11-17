@@ -23,6 +23,8 @@ nodeList* makeNodeListFromNodeTree(nodeTree* , nodeList* );
 void freeNodeList(nodeList*);
 void freeNodeTree(nodeTree*);
 nodeList* removeFromNodeList(nodeList*, networkNode*);
-
-
+int countNodesInTree(nodeTree* tree);
+int countNodesInList(nodeList* list);
+int countNoPeerRoutesInTree(nodeTree* );
+int countNoCustomerRoutesInTree(nodeTree* );
 #endif
