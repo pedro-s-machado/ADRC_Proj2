@@ -28,7 +28,6 @@ typedef struct _networkNode{
     struct _nodeList * viaPeers_list;
     /* And the number of elements in these BST's */
     int customerRouteNodes, peerRouteNodes;
-    int resetting_now;
     
     /* Routing table (BST) at a node (will not contain route to all nodes, too inefficient) */
     struct _routeNode * routes;
@@ -673,9 +672,6 @@ nodeList* makeNodeListFromNodeTree(nodeTree* tree, nodeList* ptr) {
 
 nodeTree* produceStats(networkNode* node, int resetCounters) {
     
-    if (!resetCounters)
-        node->resetting_now = 0;
-    
     if (!resetCounters && (node->viaCustomers_tree != NULL || node->viaPeers_list != NULL)) {
         return node->viaCustomers_tree;
     }
@@ -746,7 +742,6 @@ nodeTree* produceStats(networkNode* node, int resetCounters) {
             node->viaCustomers_tree = NULL;
             freeNodeList(node->viaPeers_list);
             node->viaPeers_list = NULL;
-            node->resetting_now = 1;
             return NULL;
         }
     }
@@ -812,7 +807,7 @@ void showStats(network* n) {
     printf("Total number of peer elected-routes :\t\t%i (%i%%)\n", b, 100*b/(a+b+c));
     printf("Total number of provider elected-routes :\t%i (%i%%)\n", c, 100*c/(a+b+c));
     printf("Resetting stat variables\n");
-    produceStats(n->tierOnes->node, 1);
+   // produceStats(n->tierOnes->node, 1);
     printf("Stats variables reset\n");
 }
 
