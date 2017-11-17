@@ -525,11 +525,14 @@ void updateAllRoutes(nodeTree * root, int * count){
 void specialDFS_part_two(nodeTree * root, int id, int * cicle);
 void specialDFS_part_one(networkNode * root, int id, int * cicle){
     
-    root->visited = id;
-    if((root != NULL) && !(*cicle)){
-        specialDFS_part_two(root->costumers, id, cicle);
+    if(root->visited == 0){
+        //printf("\t%d\n", root->id);
+        root->visited = id;
+        if((root != NULL) && !(*cicle)){
+            specialDFS_part_two(root->costumers, id, cicle);
+        }
+        root->finished = id;
     }
-    root->finished = id;
     return;
 }
 
@@ -554,25 +557,16 @@ void specialDFS_part_two(nodeTree * root, int id, int * cicle){
 }
 
 
-int checkCostumerCicles(network * n){
+void checkCostumerCicles(nodeTree * root, int * costumerCicle){
 
-    nodeList * iterator;
-    int costumerCicle = 0;
-
-    if(!(n->tierOneCount)){
-        printf("Finding!\n");
-        findTierOnes(n->nodes, &(n->tierOnes), &(n->tierOneCount));
-        printf("All tier-1 found!\n");
-    }
-    
-    iterator = n->tierOnes;
-    while((iterator != NULL) && !costumerCicle){
-        printf("%d\n", iterator->node->id);
-        specialDFS_part_one(iterator->node, iterator->node->id, &costumerCicle);
-        iterator = iterator->next;
+    if((root != NULL) && (*costumerCicle == 0)){
+        //printf("%d\n", root->node->id );
+        specialDFS_part_one(root->node, root->node->id, costumerCicle);
+        checkCostumerCicles(root->left, costumerCicle);
+        checkCostumerCicles(root->right, costumerCicle);
     }
 
-    return costumerCicle;
+    return;
 
 }
 network * createNetwork(char *filename){
@@ -621,13 +615,15 @@ network * createNetwork(char *filename){
         printf("Commercialy connected!\n");
     }else{
         printf("Not Commercialy connected\n");
-    }*/
-    //printf("\nUpdating routes\n");
-    //updateRoute(n->nodes->node, n->nodes->node, n->nodes->node, 0, 3);
-    //updateAllRoutes(n->nodes, &count);
-    //printf("Acabou\n");
-    //printBestRouteTo(n->nodes, n->nodes->node);
-    if(checkCostumerCicles(n)){
+    }
+    printf("\nUpdating routes\n");
+    updateRoute(n->nodes->node, n->nodes->node, n->nodes->node, 0, 3);
+    updateAllRoutes(n->nodes, &count);
+    printf("Acabou\n");
+    printBestRouteTo(n->nodes, n->nodes->node);
+    */
+    checkCostumerCicles(n->nodes, &(n->costumerCicles));
+    if(n->costumerCicles){
         printf("Costumer Cicle found!");
     }
     else{
