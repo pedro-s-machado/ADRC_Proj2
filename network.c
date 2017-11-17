@@ -608,24 +608,26 @@ network * createNetwork(char *filename){
     n->numberNodes = countNodes(n->nodes,0);
     
     findTierOnes(n->nodes, &(n->tierOnes), &(n->tierOneCount));
-    /*
+    n->numberNodes = countNodes(n->nodes,0);
+    
+    findTierOnes(n->nodes, &(n->tierOnes), &(n->tierOneCount));
     printf("\nNodes count = %d\n", n->numberNodes);
     printf("Tier One count = %d\n", n->tierOneCount);
     printList(n->tierOnes);
     printf("\nNetwork Created!\n");
-
-    printf("\nMax Depht = %d\n", maxDepth(n->nodes));
+    
     if(checkComercialConnected(n)){
         printf("Commercialy connected!\n");
     }else{
         printf("Not Commercialy connected\n");
     }
-    printf("\nUpdating routes\n");
-    updateRoute(n->nodes->node, n->nodes->node, n->nodes->node, 0, 3);
-    updateAllRoutes(n->nodes, &count);
-    printf("Acabou\n");
-    printBestRouteTo(n->nodes, n->nodes->node);
-    */
+    checkCostumerCicles(n->nodes, &(n->costumerCicles));
+    if(n->costumerCicles){
+        printf("Costumer Cicle found!\n");
+    }
+    else{
+        printf("No costumer cicle!\n");
+    }
     checkCostumerCicles(n->nodes, &(n->costumerCicles));
     if(n->costumerCicles){
         printf("Customer Cycle found!\n");
