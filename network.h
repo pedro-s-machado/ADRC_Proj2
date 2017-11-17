@@ -28,6 +28,10 @@ int countNodesInList(nodeList* list);
 int countNoPeerRoutesInTree(nodeTree* );
 int countNoCustomerRoutesInTree(nodeTree* );
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> 195a9242aba484dba7f1214be2a3a61c42e7a856
 =======
 
 >>>>>>> 195a9242aba484dba7f1214be2a3a61c42e7a856
