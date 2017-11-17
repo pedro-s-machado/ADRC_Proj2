@@ -9,6 +9,7 @@ int main(int argc, char * argv[]){
     
         n = createNetwork(argv[1]);
         //printNetwork(getNetwork(n));
+        showStats(n);
     }
 
     exit(0);
