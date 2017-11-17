@@ -14,6 +14,10 @@ int main(int argc, char * argv[]){
     }
     else {
         printf("No argument passed\n");
+        
+        n = createNetwork("small.txt");
+        //printNetwork(getNetwork(n));
+        showStats(n);
 
     }
 
